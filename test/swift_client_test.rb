@@ -103,5 +103,16 @@ class SwiftClientTest < MiniTest::Test
 
     assert_equal objects, @swift_client.get_container("container-1", :limit => 2, :marker => "object-2").parsed_response
   end
+
+  def test_not_found
+    stub_request(:get, "https://example.com/v1/AUTH_account/container/object").with(:headers => { "Accept" => "application/json", "X-Auth-Token" => "Token" }).to_return(:status => [404, "Not Found"], :body => "", :headers => { "Content-Type" => "application/json" })
+
+    begin
+      @swift_client.get_object("object", "container")
+    rescue SwiftClient::ResponseError => e
+      assert_equal 404, e.code
+      assert_equal "Not Found", e.message
+    end
+  end
 end
 

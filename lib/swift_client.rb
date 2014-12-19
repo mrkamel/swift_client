@@ -6,9 +6,21 @@ require "mime-types"
 
 class SwiftClient
   class AuthenticationError < StandardError; end
-  class ResponseError < StandardError; end
   class OptionError < StandardError; end
   class EmptyNameError < StandardError; end
+
+  class ResponseError < StandardError
+    attr_accessor :code, :message
+
+    def initialize(code, message)
+      self.code = code
+      self.message = message
+    end
+
+    def to_s
+      "#{code} #{message}"
+    end
+  end
 
   attr_accessor :options, :auth_token, :storage_url
 
@@ -112,7 +124,7 @@ class SwiftClient
       return request(method, path, opts)
     end
 
-    raise(ResponseError, "#{response.code}: #{response.message}") unless response.success?
+    raise(ResponseError.new(response.code, response.message)) unless response.success?
 
     response
   end
