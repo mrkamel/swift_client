@@ -5,10 +5,19 @@ class SwiftClientTest < MiniTest::Test
   def setup
     stub_request(:get, "https://example.com/auth/v1.0").with(:headers => { "X-Auth-Key" => "secret", "X-Auth-User" => "account:username" }).to_return(:status => 200, :body => "", :headers => { "X-Auth-Token" => "Token", "X-Storage-Url" => "https://example.com/v1/AUTH_account" })
 
-    @swift_client = SwiftClient.new(:auth_url => "https://example.com/auth/v1.0", :username => "account:username", :api_key => "secret")
+    @swift_client = SwiftClient.new(:auth_url => "https://example.com/auth/v1.0", :username => "account:username", :api_key => "secret", :temp_url_key => "Temp url key")
 
     assert_equal "Token", @swift_client.auth_token
     assert_equal "https://example.com/v1/AUTH_account", @swift_client.storage_url
+  end
+
+  def test_storage_url
+    stub_request(:get, "https://example.com/auth/v1.0").with(:headers => { "X-Auth-Key" => "secret", "X-Auth-User" => "account:username" }).to_return(:status => 200, :body => "", :headers => { "X-Auth-Token" => "Token", "X-Storage-Url" => "https://example.com/v1/AUTH_account" })
+
+    @swift_client = SwiftClient.new(:auth_url => "https://example.com/auth/v1.0", :username => "account:username", :api_key => "secret", :storage_url => "https://storage-url.com/path")
+
+    assert_equal "Token", @swift_client.auth_token
+    assert_equal "https://storage-url.com/path", @swift_client.storage_url
   end
 
   def test_get_containers
@@ -113,6 +122,14 @@ class SwiftClientTest < MiniTest::Test
       assert_equal 404, e.code
       assert_equal "Not Found", e.message
     end
+  end
+
+  def test_public_url
+    assert_equal "https://example.com/v1/AUTH_account/container/object", @swift_client.public_url("object", "container")
+  end
+
+  def test_temp_url
+    assert @swift_client.temp_url("object", "container", :expires_in => 3600) =~ %r{https://example.com/v1/AUTH_account/container/object\?temp_url_sig=[a-f0-9]{40}&temp_url_expires=[0-9]+}
   end
 end
 
