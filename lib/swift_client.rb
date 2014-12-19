@@ -126,11 +126,11 @@ class SwiftClient
     raise(TempUrlKeyMissing) unless options[:temp_url_key]
 
     expires = (Time.now + (options[:expires_in] || 3600).to_i).to_i
-    path = "/#{container}/#{object}"
+    path = URI.parse("#{storage_url}/#{container}/#{object}").path
 
     signature = OpenSSL::HMAC.hexdigest("sha1", options[:temp_url_key], "GET\n#{expires}\n#{path}")
 
-    "#{storage_url}#{path}?temp_url_sig=#{signature}&temp_url_expires=#{expires}"
+    "#{storage_url}/#{container}/#{object}?temp_url_sig=#{signature}&temp_url_expires=#{expires}"
   end
 
   private
