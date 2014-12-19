@@ -20,6 +20,12 @@ class SwiftClientTest < MiniTest::Test
     assert_equal "https://storage-url.com/path", @swift_client.storage_url
   end
 
+  def test_post_account
+    stub_request(:post, "https://example.com/v1/AUTH_account/").with(:headers => { "Accept" => "application/json", "X-Auth-Token" => "Token", "X-Account-Meta-Test" => "Test" }).to_return(:status => 204, :body => "", :headers => { "Content-Type" => "application/json" })
+
+    assert_equal 204, @swift_client.post_account("X-Account-Meta-Test" => "Test").code
+  end
+
   def test_get_containers
     containers = [
       { "count" => 1, "bytes" => 1, "name" => "container-1" },
