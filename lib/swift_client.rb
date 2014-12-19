@@ -4,7 +4,6 @@ require "swift_client/version"
 require "httparty"
 require "stringio"
 require "mime-types"
-require "openssl"
 
 class SwiftClient
   class AuthenticationError < StandardError; end
