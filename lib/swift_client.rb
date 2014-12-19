@@ -10,7 +10,6 @@ class SwiftClient
   class ResponseError < StandardError; end
   class OptionError < StandardError; end
   class EmptyNameError < StandardError; end
-  class TempUrlMissing < StandardError; end
 
   attr_accessor :options, :auth_token, :storage_url
 
