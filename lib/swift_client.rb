@@ -36,8 +36,16 @@ class SwiftClient
     authenticate
   end
 
+  def head_account
+    request :head, "/"
+  end
+
   def post_account(headers = {})
     request :post, "/", :headers => headers
+  end
+
+  def head_containers
+    request :head, "/"
   end
 
   def get_containers(query = {})

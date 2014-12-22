@@ -33,7 +33,9 @@ SwiftClient's requests, SwiftClient will raise a `SwiftClient::ResponseError`.
 
 SwiftClient offers the following requests:
 
+* head_account -> HTTParty::Response
 * post_account(headers = {}) -> HTTParty::Response
+* head_containers -> HTTParty::Response
 * get_containers(query = {}) -> HTTParty::Response
 * get_container(container, query = {}) -> HTTParty::Response
 * head_container(container) -> HTTParty::Response
