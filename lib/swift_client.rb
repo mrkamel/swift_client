@@ -52,93 +52,93 @@ class SwiftClient
     request :get, "/", :query => query
   end
 
-  def get_container(container, query = {})
-    raise(EmptyNameError) if container.empty?
+  def get_container(container_name, query = {})
+    raise(EmptyNameError) if container_name.empty?
 
-    request :get, "/#{container}", :query => query
+    request :get, "/#{container_name}", :query => query
   end
 
-  def head_container(container)
-    raise(EmptyNameError) if container.empty?
+  def head_container(container_name)
+    raise(EmptyNameError) if container_name.empty?
 
-    request :head, "/#{container}"
+    request :head, "/#{container_name}"
   end
 
-  def put_container(container, headers = {})
-    raise(EmptyNameError) if container.empty?
+  def put_container(container_name, headers = {})
+    raise(EmptyNameError) if container_name.empty?
 
-    request :put, "/#{container}", :headers => headers
+    request :put, "/#{container_name}", :headers => headers
   end
 
-  def post_container(container, headers = {})
-    raise(EmptyNameError) if container.empty?
+  def post_container(container_name, headers = {})
+    raise(EmptyNameError) if container_name.empty?
 
-    request :post, "/#{container}", :headers => headers
+    request :post, "/#{container_name}", :headers => headers
   end
 
-  def delete_container(container)
-    raise(EmptyNameError) if container.empty?
+  def delete_container(container_name)
+    raise(EmptyNameError) if container_name.empty?
 
-    request :delete, "/#{container}"
+    request :delete, "/#{container_name}"
   end
 
-  def put_object(object, data_or_io, container, headers = {})
-    raise(EmptyNameError) if object.empty? || container.empty?
+  def put_object(object_name, data_or_io, container_name, headers = {})
+    raise(EmptyNameError) if object_name.empty? || container_name.empty?
 
-    mime_type = MIME::Types.of(object).first
+    mime_type = MIME::Types.of(object_name).first
 
     extended_headers = headers.dup
     extended_headers["Content-Type"] ||= mime_type.content_type if mime_type
 
-    request :put, "/#{container}/#{object}", :body => data_or_io.respond_to?(:read) ? data_or_io.read : data_or_io, :headers => extended_headers
+    request :put, "/#{container_name}/#{object_name}", :body => data_or_io.respond_to?(:read) ? data_or_io.read : data_or_io, :headers => extended_headers
   end
 
-  def post_object(object, container, headers = {})
-    raise(EmptyNameError) if object.empty? || container.empty?
+  def post_object(object_name, container_name, headers = {})
+    raise(EmptyNameError) if object_name.empty? || container_name.empty?
 
-    request :post, "/#{container}/#{object}", :headers => headers
+    request :post, "/#{container_name}/#{object_name}", :headers => headers
   end
 
-  def get_object(object, container)
-    raise(EmptyNameError) if object.empty? || container.empty?
+  def get_object(object_name, container_name)
+    raise(EmptyNameError) if object_name.empty? || container_name.empty?
 
-    request :get, "/#{container}/#{object}"
+    request :get, "/#{container_name}/#{object_name}"
   end
 
-  def head_object(object, container)
-    raise(EmptyNameError) if object.empty? || container.empty?
+  def head_object(object_name, container_name)
+    raise(EmptyNameError) if object_name.empty? || container_name.empty?
 
-    request :head, "/#{container}/#{object}"
+    request :head, "/#{container_name}/#{object_name}"
   end
 
-  def delete_object(object, container)
-    raise(EmptyNameError) if object.empty? || container.empty?
+  def delete_object(object_name, container_name)
+    raise(EmptyNameError) if object_name.empty? || container_name.empty?
 
-    request :delete, "/#{container}/#{object}"
+    request :delete, "/#{container_name}/#{object_name}"
   end
 
-  def get_objects(container, query = {})
-    raise(EmptyNameError) if container.empty?
+  def get_objects(container_name, query = {})
+    raise(EmptyNameError) if container_name.empty?
 
-    request :get, "/#{container}", :query => query
+    request :get, "/#{container_name}", :query => query
   end
 
-  def public_url(object, container)
-    raise(EmptyNameError) if object.empty? || container.empty?
+  def public_url(object_name, container_name)
+    raise(EmptyNameError) if object_name.empty? || container_name.empty?
 
-    "#{storage_url}/#{container}/#{object}"
+    "#{storage_url}/#{container_name}/#{object_name}"
   end
 
-  def temp_url(object, container, opts = {})
-    raise(EmptyNameError) if object.empty? || container.empty?
+  def temp_url(object_name, container_name, opts = {})
+    raise(EmptyNameError) if object_name.empty? || container_name.empty?
     raise(TempUrlKeyMissing) unless options[:temp_url_key]
 
     expires = (Time.now + (options[:expires_in] || 3600).to_i).to_i
-    path = URI.parse("#{storage_url}/#{container}/#{object}").path
+    path = URI.parse("#{storage_url}/#{container_name}/#{object_name}").path
 
     signature = OpenSSL::HMAC.hexdigest("sha1", options[:temp_url_key], "GET\n#{expires}\n#{path}")
 
-    "#{storage_url}/#{container}/#{object}?temp_url_sig=#{signature}&temp_url_expires=#{expires}"
+    "#{storage_url}/#{container_name}/#{object_name}?temp_url_sig=#{signature}&temp_url_expires=#{expires}"
   end
 
   private
