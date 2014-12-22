@@ -26,12 +26,16 @@ First, connect to a Swift cluster:
 swift_client = SwiftClient.new(:auth_url => "https://example.com/auth/v1.0", :username => "account:username", :api_key => "secret api key", :temp_url_key => "temp url key", :storage_url => "https://example.com/v1/AUTH_account")
 ```
 
-where :temp_url_key and :storage_url are optional.
+where `temp_url_key` and `storage_url` are optional.
 
 SwiftClient will automatically reconnect in case the endpoint responds with 401
-Unauthorized to one of your requests using the provided credentials.
-Otherwise, i.e. in case the endpoint does not respond with 2xx to any of
-SwiftClient's requests, SwiftClient will raise a `SwiftClient::ResponseError`.
+Unauthorized to one of your requests using the provided credentials. In case
+the endpoint does not respond with 2xx to any of SwiftClient's requests,
+SwiftClient will raise a `SwiftClient::ResponseError`. Otherwise, SwiftClient
+responds with an `HTTParty::Response` object, such that you can call `#headers`
+to access the response headers or `#body` as well as `#parsed_response` to
+access the response body and JSON response. Checkout the
+[HTTParty](https://github.com/jnunemaker/httparty) gem to learn more.
 
 SwiftClient offers the following requests:
 
