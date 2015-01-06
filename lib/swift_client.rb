@@ -27,10 +27,6 @@ class SwiftClient
   attr_accessor :options, :auth_token, :storage_url
 
   def initialize(options = {})
-    [:auth_url, :username, :api_key].each do |key|
-      raise(OptionError, "#{key} is missing") unless options.key?(key)
-    end
-
     self.options = options
 
     authenticate
@@ -162,12 +158,49 @@ class SwiftClient
   end
 
   def authenticate
+    options[:auth_url] =~ /v2/ ? authenticate_v2 : authenticate_v1
+  end
+
+  def authenticate_v1
+    [:auth_url, :username, :api_key].each do |key|
+      raise(AuthenticationError, "#{key} missing") unless options[key]
+    end
+
     response = HTTParty.get(options[:auth_url], :headers => { "X-Auth-User" => options[:username], "X-Auth-Key" => options[:api_key] })
 
     raise(AuthenticationError, "#{response.code}: #{response.message}") unless response.success?
 
     self.auth_token = response.headers["X-Auth-Token"]
     self.storage_url = options[:storage_url] || response.headers["X-Storage-Url"]
+  end
+
+  def authenticate_v2
+    [:auth_url, :storage_url].each do |key|
+      raise(AuthenticationError, "#{key} missing") unless options[key]
+    end
+
+    auth = { "auth" => {} }
+
+    if options[:tenant_name]
+      auth["auth"]["tenantName"] = options[:tenant_name]
+    else
+      raise AuthenticationError, "No tenant specified"
+    end
+
+    if options[:username] && options[:password]
+      auth["auth"]["passwordCredentials"] = { "username" => options[:username], "password" => options[:password] }
+    elsif options[:access_key] && options[:secret_key]
+      auth["auth"]["apiAccessKeyCredentials"] = { "accessKey" => options[:access_key], "secretKey" => options[:secret_key] }
+    else
+      raise AuthenticationError, "Unknown authentication method"
+    end
+
+    response = HTTParty.post("#{options[:auth_url].gsub(/\/+$/, "")}/tokens", :body => JSON.dump(auth), :headers => { "Content-Type" => "application/json" })
+
+    raise(AuthenticationError, "#{response.code}: #{response.message}") unless response.success?
+
+    self.auth_token = response.parsed_response["access"]["token"]["id"]
+    self.storage_url = options[:storage_url]
   end
 end
 

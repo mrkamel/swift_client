@@ -11,6 +11,24 @@ class SwiftClientTest < MiniTest::Test
     assert_equal "https://example.com/v1/AUTH_account", @swift_client.storage_url
   end
 
+  def test_v2_authentication_with_password
+    stub_request(:post, "https://auth.example.com/v2.0/tokens").with(:body => JSON.dump("auth" => { "tenantName" => "Tenant", "passwordCredentials" => { "username" => "Username", :password => "Password"  }})).to_return(:status => 200, :body => JSON.dump("access" => { "token" => { "id" => "Token" }}), :headers => { "Content-Type" => "application/json" })
+
+    @swift_client = SwiftClient.new(:storage_url => "https://example.com/v1/AUTH_account", :auth_url => "https://auth.example.com/v2.0", :tenant_name => "Tenant", :username => "Username", :password => "Password")
+
+    assert_equal "Token", @swift_client.auth_token
+    assert_equal "https://example.com/v1/AUTH_account", @swift_client.storage_url
+  end
+
+  def test_v2_authentication_with_key
+    stub_request(:post, "https://auth.example.com/v2.0/tokens").with(:body => JSON.dump("auth" => { "tenantName" => "Tenant", "apiAccessKeyCredentials" => { "accessKey" => "AccessKey", :secretKey => "SecretKey"  }})).to_return(:status => 200, :body => JSON.dump("access" => { "token" => { "id" => "Token" }}), :headers => { "Content-Type" => "application/json" })
+
+    @swift_client = SwiftClient.new(:storage_url => "https://example.com/v1/AUTH_account", :auth_url => "https://auth.example.com/v2.0", :tenant_name => "Tenant", :access_key => "AccessKey", :secret_key => "SecretKey")
+
+    assert_equal "Token", @swift_client.auth_token
+    assert_equal "https://example.com/v1/AUTH_account", @swift_client.storage_url
+  end
+
   def test_storage_url
     stub_request(:get, "https://example.com/auth/v1.0").with(:headers => { "X-Auth-Key" => "secret", "X-Auth-User" => "account:username" }).to_return(:status => 200, :body => "", :headers => { "X-Auth-Token" => "Token", "X-Storage-Url" => "https://example.com/v1/AUTH_account" })
 
