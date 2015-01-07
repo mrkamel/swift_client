@@ -67,6 +67,20 @@ class SwiftClientTest < MiniTest::Test
     assert_equal containers, @swift_client.get_containers.parsed_response
   end
 
+  def test_paginate_containers
+    containers = [
+      { "count" => 1, "bytes" => 1, "name" => "container-1" },
+      { "count" => 1, "bytes" => 1, "name" => "container-2" },
+      { "count" => 1, "bytes" => 1, "name" => "container-3" }
+    ]
+
+    stub_request(:get, "https://example.com/v1/AUTH_account/?limit=2").with(:headers => { "Accept" => "application/json", "X-Auth-Token" => "Token" }).to_return(:status => 200, :body => JSON.dump(containers[0 .. 1]), :headers => { "Content-Type" => "application/json" })
+    stub_request(:get, "https://example.com/v1/AUTH_account/?limit=2&marker=container-2").with(:headers => { "Accept" => "application/json", "X-Auth-Token" => "Token" }).to_return(:status => 200, :body => JSON.dump(containers[2 .. 3]), :headers => { "Content-Type" => "application/json" })
+    stub_request(:get, "https://example.com/v1/AUTH_account/?limit=2&marker=container-3").with(:headers => { "Accept" => "application/json", "X-Auth-Token" => "Token" }).to_return(:status => 200, :body => JSON.dump([]), :headers => { "Content-Type" => "application/json" })
+
+    assert_equal containers, @swift_client.paginate_containers(:limit => 2).collect(&:parsed_response).flatten
+  end
+
   def test_get_container
     objects = [
       { "hash" => "Hash", "last_modified" => "Last modified", "bytes" => 1, "name" => "object-2", "content_type" => "Content type" },
@@ -76,6 +90,20 @@ class SwiftClientTest < MiniTest::Test
     stub_request(:get, "https://example.com/v1/AUTH_account/container-1?limit=2&marker=object-2").with(:headers => { "Accept" => "application/json", "X-Auth-Token" => "Token" }).to_return(:status => 200, :body => JSON.dump(objects), :headers => { "Content-Type" => "application/json" })
 
     assert_equal objects, @swift_client.get_container("container-1", :limit => 2, :marker => "object-2").parsed_response
+  end
+
+  def test_paginate_container
+    objects = [
+      { "hash" => "Hash", "last_modified" => "Last modified", "bytes" => 1, "name" => "object-1", "content_type" => "Content type" },
+      { "hash" => "Hash", "last_modified" => "Last modified", "bytes" => 1, "name" => "object-2", "content_type" => "Content type" },
+      { "hash" => "Hash", "last_modified" => "Last modified", "bytes" => 1, "name" => "object-3", "content_type" => "Content type" },
+    ]
+
+    stub_request(:get, "https://example.com/v1/AUTH_account/container-1?limit=2").with(:headers => { "Accept" => "application/json", "X-Auth-Token" => "Token" }).to_return(:status => 200, :body => JSON.dump(objects[0 .. 1]), :headers => { "Content-Type" => "application/json" })
+    stub_request(:get, "https://example.com/v1/AUTH_account/container-1?limit=2&marker=object-2").with(:headers => { "Accept" => "application/json", "X-Auth-Token" => "Token" }).to_return(:status => 200, :body => JSON.dump(objects[2 .. 3]), :headers => { "Content-Type" => "application/json" })
+    stub_request(:get, "https://example.com/v1/AUTH_account/container-1?limit=2&marker=object-3").with(:headers => { "Accept" => "application/json", "X-Auth-Token" => "Token" }).to_return(:status => 200, :body => JSON.dump([]), :headers => { "Content-Type" => "application/json" })
+
+    assert_equal objects, @swift_client.paginate_container("container-1", :limit => 2).collect(&:parsed_response).flatten
   end
 
   def test_head_container
@@ -146,7 +174,21 @@ class SwiftClientTest < MiniTest::Test
 
     stub_request(:get, "https://example.com/v1/AUTH_account/container-1?limit=2&marker=object-2").with(:headers => { "Accept" => "application/json", "X-Auth-Token" => "Token" }).to_return(:status => 200, :body => JSON.dump(objects), :headers => { "Content-Type" => "application/json" })
 
-    assert_equal objects, @swift_client.get_container("container-1", :limit => 2, :marker => "object-2").parsed_response
+    assert_equal objects, @swift_client.get_objects("container-1", :limit => 2, :marker => "object-2").parsed_response
+  end
+
+  def test_paginate_objects
+    objects = [
+      { "hash" => "Hash", "last_modified" => "Last modified", "bytes" => 1, "name" => "object-1", "content_type" => "Content type" },
+      { "hash" => "Hash", "last_modified" => "Last modified", "bytes" => 1, "name" => "object-2", "content_type" => "Content type" },
+      { "hash" => "Hash", "last_modified" => "Last modified", "bytes" => 1, "name" => "object-3", "content_type" => "Content type" }
+    ]
+
+    stub_request(:get, "https://example.com/v1/AUTH_account/container-1?limit=2").with(:headers => { "Accept" => "application/json", "X-Auth-Token" => "Token" }).to_return(:status => 200, :body => JSON.dump(objects[0 .. 1]), :headers => { "Content-Type" => "application/json" })
+    stub_request(:get, "https://example.com/v1/AUTH_account/container-1?limit=2&marker=object-2").with(:headers => { "Accept" => "application/json", "X-Auth-Token" => "Token" }).to_return(:status => 200, :body => JSON.dump(objects[2 .. 3]), :headers => { "Content-Type" => "application/json" })
+    stub_request(:get, "https://example.com/v1/AUTH_account/container-1?limit=2&marker=object-3").with(:headers => { "Accept" => "application/json", "X-Auth-Token" => "Token" }).to_return(:status => 200, :body => JSON.dump([]), :headers => { "Content-Type" => "application/json" })
+
+    assert_equal objects, @swift_client.paginate_objects("container-1", :limit => 2).collect(&:parsed_response).flatten
   end
 
   def test_not_found

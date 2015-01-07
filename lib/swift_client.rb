@@ -48,10 +48,18 @@ class SwiftClient
     request :get, "/", :query => query
   end
 
+  def paginate_containers(query = {}, &block)
+    paginate :get_containers, query, &block
+  end
+
   def get_container(container_name, query = {})
     raise(EmptyNameError) if container_name.empty?
 
     request :get, "/#{container_name}", :query => query
+  end
+
+  def paginate_container(container_name, query = {}, &block)
+    paginate :get_container, container_name, query, &block
   end
 
   def head_container(container_name)
@@ -117,6 +125,10 @@ class SwiftClient
     raise(EmptyNameError) if container_name.empty?
 
     request :get, "/#{container_name}", :query => query
+  end
+
+  def paginate_objects(container_name, query = {}, &block)
+    paginate :get_objects, container_name, query, &block
   end
 
   def public_url(object_name, container_name)
@@ -201,6 +213,22 @@ class SwiftClient
 
     self.auth_token = response.parsed_response["access"]["token"]["id"]
     self.storage_url = options[:storage_url]
+  end
+
+  def paginate(method, *args, query)
+    return enum_for(:paginate, method, *args, query) unless block_given?
+
+    marker = nil
+
+    loop do
+      response = send(method, *args, marker ? query.merge(:marker => marker) : query)
+
+      return if response.parsed_response.empty?
+
+      yield response
+
+      marker = response.parsed_response.last["name"]
+    end
   end
 end
 

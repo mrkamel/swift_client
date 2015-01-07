@@ -53,7 +53,9 @@ SwiftClient offers the following requests:
 * post_account(headers = {}) -> HTTParty::Response
 * head_containers -> HTTParty::Response
 * get_containers(query = {}) -> HTTParty::Response
+* paginate_containers(query = {}) -> Enumerator
 * get_container(container_name, query = {}) -> HTTParty::Response
+* paginate_container(container_name, query = {}) -> Enumerator
 * head_container(container_name) -> HTTParty::Response
 * put_container(container_name, headers = {}) -> HTTParty::Response
 * post_container(container_name, headers = {}) -> HTTParty::Response
@@ -64,6 +66,7 @@ SwiftClient offers the following requests:
 * head_object(object_name, container_name) -> HTTParty::Response
 * delete_object(object_name, container_name) -> HTTParty::Response
 * get_objects(container_name, query = {}) -> HTTParty::Response
+* paginate_objetcs(container_name, query = {}) -> Enumerator
 * public_url(object_name, container_name) -> HTTParty::Response
 * temp_url(object_name, container_name) -> HTTParty::Response
 
