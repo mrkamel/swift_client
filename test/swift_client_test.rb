@@ -131,13 +131,13 @@ class SwiftClientTest < MiniTest::Test
   end
 
   def test_put_object
-    stub_request(:put, "https://example.com/v1/AUTH_account/container/object").with(:body => "data", :headers => { "Accept" => "application/json", "X-Auth-Token" => "Token", "X-Object-Meta-Test" => "Test" }).to_return(:status => 201, :body => "", :headers => {})
+    stub_request(:put, "https://example.com/v1/AUTH_account/container/object").with(:body => "data", :headers => { "Transfer-Encoding" => "chunked", "Accept" => "application/json", "X-Auth-Token" => "Token", "X-Object-Meta-Test" => "Test" }).to_return(:status => 201, :body => "", :headers => {})
 
     assert_equal 201, @swift_client.put_object("object", "data", "container", "X-Object-Meta-Test" => "Test").code
   end
 
   def test_put_object_with_io
-    stub_request(:put, "https://example.com/v1/AUTH_account/container/object").with(:body => "data", :headers => { "Accept" => "application/json", "X-Auth-Token" => "Token", "X-Object-Meta-Test" => "Test" }).to_return(:status => 201, :body => "", :headers => {})
+    stub_request(:put, "https://example.com/v1/AUTH_account/container/object").with(:body => "data", :headers => { "Transfer-Encoding" => "chunked", "Accept" => "application/json", "X-Auth-Token" => "Token", "X-Object-Meta-Test" => "Test" }).to_return(:status => 201, :body => "", :headers => {})
 
     assert_equal 201, @swift_client.put_object("object", StringIO.new("data"), "container", "X-Object-Meta-Test" => "Test").code
   end

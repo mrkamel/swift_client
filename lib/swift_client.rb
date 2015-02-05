@@ -4,6 +4,7 @@ require "swift_client/version"
 require "httparty"
 require "mime-types"
 require "openssl"
+require "stringio"
 
 class SwiftClient
   class AuthenticationError < StandardError; end
@@ -91,10 +92,11 @@ class SwiftClient
 
     mime_type = MIME::Types.of(object_name).first
 
-    extended_headers = headers.dup
+    extended_headers = (headers || {}).dup
     extended_headers["Content-Type"] ||= mime_type.content_type if mime_type
+    extended_headers["Transfer-Encoding"] = "chunked"
 
-    request :put, "/#{container_name}/#{object_name}", :body => data_or_io.respond_to?(:read) ? data_or_io.read : data_or_io, :headers => extended_headers
+    request :put, "/#{container_name}/#{object_name}", :body_stream => data_or_io.respond_to?(:read) ? data_or_io : StringIO.new(data_or_io), :headers => extended_headers
   end
 
   def post_object(object_name, container_name, headers = {})
@@ -152,11 +154,11 @@ class SwiftClient
   private
 
   def request(method, path, opts = {})
-    opts[:headers] ||= {}
-    opts[:headers]["X-Auth-Token"] = auth_token
-    opts[:headers]["Accept"] = "application/json"
+    headers = (opts[:headers] || {}).dup
+    headers["X-Auth-Token"] = auth_token
+    headers["Accept"] = "application/json"
 
-    response = HTTParty.send(method, "#{storage_url}#{path}", opts)
+    response = HTTParty.send(method, "#{storage_url}#{path}", opts.merge(:headers => headers))
 
     if response.code == 401
       authenticate
