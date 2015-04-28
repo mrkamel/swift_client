@@ -93,7 +93,12 @@ class SwiftClient
     mime_type = MIME::Types.of(object_name).first
 
     extended_headers = (headers || {}).dup
-    extended_headers["Content-Type"] ||= mime_type.content_type if mime_type
+
+    unless find_header_key(extended_headers, "Content-Type")
+      extended_headers["Content-Type"] = mime_type.content_type if mime_type
+      extended_headers["Content-Type"] ||= "application/octet-stream"
+    end
+
     extended_headers["Transfer-Encoding"] = "chunked"
 
     request :put, "/#{container_name}/#{object_name}", :body_stream => data_or_io.respond_to?(:read) ? data_or_io : StringIO.new(data_or_io), :headers => extended_headers
@@ -152,6 +157,10 @@ class SwiftClient
   end
 
   private
+
+  def find_header_key(headers, key)
+    headers.keys.detect { |k| k.downcase == key.downcase }
+  end
 
   def request(method, path, opts = {})
     headers = (opts[:headers] || {}).dup
