@@ -15,3 +15,5 @@ install:
 
 script: "bundle exec rake test"
 
+sudo: false
+
