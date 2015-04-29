@@ -1,3 +1,8 @@
+[![Build Status](https://secure.travis-ci.org/mrkamel/swift_client.png?branch=master)](http://travis-ci.org/mrkamel/swift_client)
+[![Code Climate](https://codeclimate.com/github/mrkamel/swift_client.png)](https://codeclimate.com/github/mrkamel/swift_client)
+[![Dependency Status](https://gemnasium.com/mrkamel/swift_client.png?travis)](https://gemnasium.com/mrkamel/swift_client)
+[![Gem Version](https://badge.fury.io/rb/swift_client.svg)](http://badge.fury.io/rb/swift_client)
+
 # SwiftClient
 
 Small but powerful client to interact with OpenStack Swift.
@@ -66,7 +71,7 @@ SwiftClient offers the following requests:
 * head_object(object_name, container_name) -> HTTParty::Response
 * delete_object(object_name, container_name) -> HTTParty::Response
 * get_objects(container_name, query = {}) -> HTTParty::Response
-* paginate_objetcs(container_name, query = {}) -> Enumerator
+* paginate_objects(container_name, query = {}) -> Enumerator
 * public_url(object_name, container_name) -> HTTParty::Response
 * temp_url(object_name, container_name) -> HTTParty::Response
 
