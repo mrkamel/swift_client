@@ -172,6 +172,8 @@ class SwiftClient
     if response.code == 401
       authenticate
 
+      opts[:body_stream].rewind if opts[:body_stream].respond_to?(:rewind)
+
       return request(method, path, opts)
     end
 
