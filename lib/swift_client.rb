@@ -167,12 +167,14 @@ class SwiftClient
     headers["X-Auth-Token"] = auth_token
     headers["Accept"] = "application/json"
 
+    stream_pos = opts[:body_stream].pos if opts[:body_stream]
+
     response = HTTParty.send(method, "#{storage_url}#{path}", opts.merge(:headers => headers))
 
     if response.code == 401
       authenticate
 
-      opts[:body_stream].rewind if opts[:body_stream].respond_to?(:rewind)
+      opts[:body_stream].pos = stream_pos if opts[:body_stream]
 
       return request(method, path, opts)
     end
