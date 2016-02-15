@@ -185,7 +185,10 @@ class SwiftClient
   end
 
   def authenticate
-    options[:auth_url] =~ /v2/ ? authenticate_v2 : authenticate_v1
+    return authenticate_v3 if options[:auth_url] =~ /v3/
+    return authenticate_v2 if options[:auth_url] =~ /v2/
+
+    authenticate_v1
   end
 
   def authenticate_v1
@@ -227,6 +230,34 @@ class SwiftClient
     raise(AuthenticationError, "#{response.code}: #{response.message}") unless response.success?
 
     self.auth_token = response.parsed_response["access"]["token"]["id"]
+    self.storage_url = options[:storage_url]
+  end
+
+  def authenticate_v3
+    [:auth_url, :storage_url].each do |key|
+      raise(AuthenticationError, "#{key} missing") unless options[key]
+    end
+
+    auth = { "auth" => { "identity" => {} } }
+
+    if options[:username] && options[:password]
+      auth["auth"]["identity"]["methods"] = ["password"]
+      auth["auth"]["password"] = { "user" => { "name" => options[:username], "password" => options[:password] } }
+    elsif options[:user_id] && options[:password]
+      auth["auth"]["identity"]["methods"] = ["password"]
+      auth["auth"]["password"] = { "user" => { "id" => options[:user_id], "password" => options[:password] } }
+    elsif options[:auth_token]
+      auth["auth"]["identity"]["methods"] = ["token"]
+      auth["auth"]["token"] = { "id" => options[:auth_token] }
+    else
+      raise AuthenticationError, "Unknown authentication method"
+    end
+
+    response = HTTParty.post("#{options[:auth_url].gsub(/\/+$/, "")}/auth/tokens", :body => JSON.dump(auth), :headers => { "Content-Type" => "application/json" })
+
+    raise(AuthenticationError, "#{response.code}: #{response.message}") unless response.success?
+
+    self.auth_token = response.headers["X-Subject-Token"]
     self.storage_url = options[:storage_url]
   end
 
