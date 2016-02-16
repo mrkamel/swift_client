@@ -28,31 +28,64 @@ Or install it yourself as:
 First, connect to a Swift cluster:
 
 ```ruby
-swift_client = SwiftClient.new(:auth_url => "https://example.com/auth/v1.0", :username => "account:username", :api_key => "api key", :temp_url_key => "temp url key", :storage_url => "https://example.com/v1/AUTH_account")
+swift_client = SwiftClient.new(
+  :auth_url => "https://example.com/auth/v1.0",
+  :username => "account:username",
+  :api_key => "api key",
+  :temp_url_key => "temp url key",
+  :storage_url => "https://example.com/v1/AUTH_account"
+)
 ```
 
 To connect via v2 you have to add version and method specific details:
 
 ```ruby
-swift_client = SwiftClient.new(:auth_url => "https://auth.example.com/v2.0", :storage_url => "https://storage.example.com/v1/AUTH_account", :tenant_name => "tenant", :username => "username", :password => "password")
+swift_client = SwiftClient.new(
+  :auth_url => "https://auth.example.com/v2.0",
+  :storage_url => "https://storage.example.com/v1/AUTH_account",
+  :tenant_name => "tenant",
+  :username => "username",
+  :password => "password"
+)
 
 # OR
 
-swift_client = SwiftClient.new(:auth_url => "https://auth.example.com/v2.0", :storage_url => "https://storage.example.com/v1/AUTH_account", :tenant_name => "tenant", :access_key => "access key", :secret_key => "secret key")
+swift_client = SwiftClient.new(
+  :auth_url => "https://auth.example.com/v2.0",
+  :storage_url => "https://storage.example.com/v1/AUTH_account",
+  :tenant_name => "tenant",
+  :access_key => "access key",
+  :secret_key => "secret key"
+)
 ```
 
 To connect via v3:
 
 ```ruby
-swift_client = SwiftClient.new(:auth_url => "https://auth.example.com/v3", :storage_url => "https://storage.example.com/v1/AUTH_account", :username => "username", :password => "password", :domain => "example.com") # domain_id is valid as well
+swift_client = SwiftClient.new(
+  :auth_url => "https://auth.example.com/v3",
+  :storage_url => "https://storage.example.com/v1/AUTH_account",
+  :username => "username",
+  :password => "password",
+  :domain => "example.com" # :domain_id => "..." is valid as well
+)
 
 # OR
 
-swift_client = SwiftClient.new(:auth_url => "https://auth.example.com/v3", :storage_url => "https://storage.example.com/v1/AUTH_account", :user_id => "user id", :password => "password")
+swift_client = SwiftClient.new(
+  :auth_url => "https://auth.example.com/v3",
+  :storage_url => "https://storage.example.com/v1/AUTH_account",
+  :user_id => "user id",
+  :password => "password"
+)
 
 # OR
 
-swift_client = SwiftClient.new(:auth_url => "https://auth.example.com/v3", :storage_url => "https://storage.example.com/v1/AUTH_account", :token => "token")
+swift_client = SwiftClient.new(
+  :auth_url => "https://auth.example.com/v3",
+  :storage_url => "https://storage.example.com/v1/AUTH_account",
+  :token => "token"
+)
 ```
 
 where `temp_url_key` and `storage_url` are optional.
