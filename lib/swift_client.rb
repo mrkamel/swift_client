@@ -240,15 +240,16 @@ class SwiftClient
 
     auth = { "auth" => { "identity" => {} } }
 
-    if options[:username] && options[:password]
+    if options[:username] && options[:password] && (options[:domain] || options[:domain_id])
       auth["auth"]["identity"]["methods"] = ["password"]
-      auth["auth"]["password"] = { "user" => { "name" => options[:username], "password" => options[:password] } }
+      auth["auth"]["identity"]["password"] = { "user" => { "name" => options[:username], "password" => options[:password] } }
+      auth["auth"]["identity"]["password"]["user"]["domain"] = options[:domain] ? { "name" => options[:domain] } : { "id" => options[:domain_id] }
     elsif options[:user_id] && options[:password]
       auth["auth"]["identity"]["methods"] = ["password"]
-      auth["auth"]["password"] = { "user" => { "id" => options[:user_id], "password" => options[:password] } }
-    elsif options[:auth_token]
+      auth["auth"]["identity"]["password"] = { "user" => { "id" => options[:user_id], "password" => options[:password] } }
+    elsif options[:token]
       auth["auth"]["identity"]["methods"] = ["token"]
-      auth["auth"]["token"] = { "id" => options[:auth_token] }
+      auth["auth"]["identity"]["token"] = { "id" => options[:token] }
     else
       raise AuthenticationError, "Unknown authentication method"
     end
