@@ -234,16 +234,16 @@ class SwiftClient
   end
 
   def authenticate_v3
-    [:auth_url, :storage_url].each do |key|
+    [:auth_url].each do |key|
       raise(AuthenticationError, "#{key} missing") unless options[key]
     end
 
     auth = { "auth" => { "identity" => {} } }
 
-    if options[:username] && options[:password] && (options[:domain] || options[:domain_id])
+    if options[:username] && options[:password] && (options[:user_domain] || options[:user_domain_id])
       auth["auth"]["identity"]["methods"] = ["password"]
       auth["auth"]["identity"]["password"] = { "user" => { "name" => options[:username], "password" => options[:password] } }
-      auth["auth"]["identity"]["password"]["user"]["domain"] = options[:domain] ? { "name" => options[:domain] } : { "id" => options[:domain_id] }
+      auth["auth"]["identity"]["password"]["user"]["domain"] = options[:user_domain] ? { "name" => options[:user_domain] } : { "id" => options[:user_domain_id] }
     elsif options[:user_id] && options[:password]
       auth["auth"]["identity"]["methods"] = ["password"]
       auth["auth"]["identity"]["password"] = { "user" => { "id" => options[:user_id], "password" => options[:password] } }
@@ -254,12 +254,35 @@ class SwiftClient
       raise AuthenticationError, "Unknown authentication method"
     end
 
+    #handle project authentication scope
+    if (options[:project_id] || options[:project_name]) && (options[:project_domain_name] || options[:project_domain_id])
+      auth["auth"]["scope"] = { "project" => { "domain" => {} } }
+      auth["auth"]["scope"]["project"]["name"] =  options[:project_name] if options[:project_name]
+      auth["auth"]["scope"]["project"]["id"] =  options[:project_id] if options[:project_id]
+      auth["auth"]["scope"]["project"]["domain"]["name"] = options[:project_domain_name] if options[:project_domain_name]
+      auth["auth"]["scope"]["project"]["domain"]["id"] = options[:project_domain_id] if options[:project_domain_id]
+    end
+
+    #handle domain authentication scope
+    if options[:domain_name] || options[:domain_id]
+      auth["auth"]["scope"] = { "domain" => {} }
+      auth["auth"]["scope"]["domain"]["name"] = options[:domain_name] if options[:domain_name]
+      auth["auth"]["scope"]["domain"]["id"] = options[:domain_id] if options[:domain_id]
+    end
+
     response = HTTParty.post("#{options[:auth_url].gsub(/\/+$/, "")}/auth/tokens", :body => JSON.dump(auth), :headers => { "Content-Type" => "application/json" })
 
     raise(AuthenticationError, "#{response.code}: #{response.message}") unless response.success?
 
     self.auth_token = response.headers["X-Subject-Token"]
-    self.storage_url = options[:storage_url]
+    self.storage_url = options[:storage_url] || begin
+      if response.parsed_response["token"].has_key?('catalog')
+        swift_service = response.parsed_response["token"]["catalog"].detect {|service| service["type"]=="object-store"}
+        swift_endpoint = swift_service["endpoints"].detect {|endpoint| endpoint["interface"]=="public"} if swift_service
+        swift_endpoint["url"] if swift_endpoint
+      end
+    end
+    raise(AuthenticationError, "storage_url missing") unless self.storage_url 
   end
 
   def paginate(method, *args, query)
