@@ -67,7 +67,32 @@ swift_client = SwiftClient.new(
   :storage_url => "https://storage.example.com/v1/AUTH_account",
   :username => "username",
   :password => "password",
-  :domain => "example.com" # :domain_id => "..." is valid as well
+  :user_domain => "example.com" # :user_domain_id => "..." is valid as well
+)
+
+# OR
+
+# project scoped authentication
+
+swift_client = SwiftClient.new(
+  :auth_url => "https://auth.example.com/v3",
+  :username => "username",
+  :password => "password",
+  :user_domain => "example.com", # :user_domain_id => "..." is valid as well
+  :project_id => "p-123456", # :project_name => "..." is valid as well
+  :project_domain_id => "d-123456 #:project_domain_name => "..." is valid as well
+)
+
+# OR
+
+# domain scoped authentication
+
+swift_client = SwiftClient.new(
+  :auth_url => "https://auth.example.com/v3",
+  :username => "username",
+  :password => "password",
+  :user_domain => "example.com", # :user_domain_id => "..." is valid as well
+  :domain_id => "d-123456" # :domain_name => "..." is valid as well
 )
 
 # OR
