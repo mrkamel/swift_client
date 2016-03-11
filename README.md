@@ -80,7 +80,7 @@ swift_client = SwiftClient.new(
   :password => "password",
   :user_domain => "example.com", # :user_domain_id => "..." is valid as well
   :project_id => "p-123456", # :project_name => "..." is valid as well
-  :project_domain_id => "d-123456 #:project_domain_name => "..." is valid as well
+  :project_domain_id => "d-123456" # :project_domain_name => "..." is valid as well
 )
 
 # OR

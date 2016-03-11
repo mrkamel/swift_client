@@ -234,9 +234,8 @@ class SwiftClient
   end
 
   def authenticate_v3
-    [:auth_url].each do |key|
-      raise(AuthenticationError, "#{key} missing") unless options[key]
-    end
+    raise(AuthenticationError, "auth_url missing") unless options[:auth_url]
+    raise(AuthenticationError, "username in combination with domain/domain_id is deprecated, please use user_domain/user_domain_id instead") if options[:username] && (options[:domain] || options[:domain_id]) && !options[:user_domain] && !options[:user_domain_id]
 
     auth = { "auth" => { "identity" => {} } }
 
@@ -254,7 +253,8 @@ class SwiftClient
       raise AuthenticationError, "Unknown authentication method"
     end
 
-    #handle project authentication scope
+    # handle project authentication scope
+
     if (options[:project_id] || options[:project_name]) && (options[:project_domain_name] || options[:project_domain_id])
       auth["auth"]["scope"] = { "project" => { "domain" => {} } }
       auth["auth"]["scope"]["project"]["name"] =  options[:project_name] if options[:project_name]
@@ -263,7 +263,8 @@ class SwiftClient
       auth["auth"]["scope"]["project"]["domain"]["id"] = options[:project_domain_id] if options[:project_domain_id]
     end
 
-    #handle domain authentication scope
+    # handle domain authentication scope
+
     if options[:domain_name] || options[:domain_id]
       auth["auth"]["scope"] = { "domain" => {} }
       auth["auth"]["scope"]["domain"]["name"] = options[:domain_name] if options[:domain_name]
@@ -275,14 +276,24 @@ class SwiftClient
     raise(AuthenticationError, "#{response.code}: #{response.message}") unless response.success?
 
     self.auth_token = response.headers["X-Subject-Token"]
+
     self.storage_url = options[:storage_url] || begin
-      if response.parsed_response["token"].has_key?('catalog')
-        swift_service = response.parsed_response["token"]["catalog"].detect {|service| service["type"]=="object-store"}
-        swift_endpoint = swift_service["endpoints"].detect {|endpoint| endpoint["interface"]=="public"} if swift_service
-        swift_endpoint["url"] if swift_endpoint
+      if response.parsed_response["token"]["catalog"]
+        swift_services = response.parsed_response["token"]["catalog"].select { |service| service["type"] == "object-store" }
+        swift_service = swift_services.first
+
+        raise(AuthenticationError, "storage_url missing") unless swift_services.size == 1
+
+        swift_endpoints = swift_service["endpoints"].select { |endpoint| endpoint["interface"] == "public" }
+        swift_endpoint = swift_endpoints.first
+
+        raise(AuthenticationError, "storage_url missing") unless swift_endpoints.size == 1
+
+        swift_endpoint["url"]
       end
     end
-    raise(AuthenticationError, "storage_url missing") unless self.storage_url 
+
+    raise(AuthenticationError, "storage_url missing") unless storage_url
   end
 
   def paginate(method, *args, query)

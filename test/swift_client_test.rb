@@ -39,12 +39,28 @@ class SwiftClientTest < MiniTest::Test
   end
 
   def test_v3_authentication_storage_url_from_catalog
-    stub_request(:post, "https://auth.example.com/v3/auth/tokens").with(:body => JSON.dump("auth" => { "identity" => { "methods" => ["password"], "password" => { "user" => { "name" => "username", "password" => "secret", "domain" => { "name" => "example.com" }}}}})).to_return(:status => 200, :body => JSON.dump("token" => {"catalog"=> [{"type" => "object-store", "endpoints" => [{"interface"=>"public", "url"=> "https://example.com/v1/AUTH_account"}]}]}), :headers => { "X-Subject-Token" => "Token", "Content-Type" => "application/json" })
+    stub_request(:post, "https://auth.example.com/v3/auth/tokens").with(:body => JSON.dump("auth" => { "identity" => { "methods" => ["password"], "password" => { "user" => { "name" => "username", "password" => "secret", "domain" => { "name" => "example.com" }}}}})).to_return(:status => 200, :body => JSON.dump("token" => { "catalog"=> [{ "type" => "object-store", "endpoints" => [{ "interface"=>"public", "url"=> "https://example.com/v1/AUTH_account" }] }] }), :headers => { "X-Subject-Token" => "Token", "Content-Type" => "application/json" })
 
     @swift_client = SwiftClient.new(:auth_url => "https://auth.example.com/v3", :username => "username", :user_domain => "example.com", :password => "secret")
 
     assert_equal "Token", @swift_client.auth_token
     assert_equal "https://example.com/v1/AUTH_account", @swift_client.storage_url
+  end
+
+  def test_v3_authentication_without_storage_url_and_multiple_swifts
+    stub_request(:post, "https://auth.example.com/v3/auth/tokens").with(:body => JSON.dump("auth" => { "identity" => { "methods" => ["password"], "password" => { "user" => { "name" => "username", "password" => "secret", "domain" => { "name" => "example.com" }}}}})).to_return(:status => 200, :body => JSON.dump("token" => { "catalog"=> [{ "type" => "object-store", "endpoints" => [{ "interface"=>"public", "url"=> "https://example.com/v1/AUTH_account" }] }, { "type" => "object-store", "endpoints" => [{ "interface"=>"public", "url"=> "https://example.com/v1/AUTH_account" }] }] }), :headers => { "X-Subject-Token" => "Token", "Content-Type" => "application/json" })
+
+    assert_raises SwiftClient::AuthenticationError do
+      SwiftClient.new :auth_url => "https://auth.example.com/v3", :username => "username", :user_domain => "example.com", :password => "secret"
+    end
+  end
+
+  def test_v3_authentication_without_storage_url_and_multiple_endpoints
+    stub_request(:post, "https://auth.example.com/v3/auth/tokens").with(:body => JSON.dump("auth" => { "identity" => { "methods" => ["password"], "password" => { "user" => { "name" => "username", "password" => "secret", "domain" => { "name" => "example.com" }}}}})).to_return(:status => 200, :body => JSON.dump("token" => { "catalog"=> [{ "type" => "object-store", "endpoints" => [{ "interface"=>"public", "url"=> "https://first.example.com/v1/AUTH_account" }, { "interface"=>"public", "url"=> "https://second.example.com/v1/AUTH_account" }] }] }), :headers => { "X-Subject-Token" => "Token", "Content-Type" => "application/json" })
+
+    assert_raises SwiftClient::AuthenticationError do
+      SwiftClient.new :auth_url => "https://auth.example.com/v3", :username => "username", :user_domain => "example.com", :password => "secret"
+    end
   end
 
   def test_v3_authentication_with_token
@@ -54,6 +70,12 @@ class SwiftClientTest < MiniTest::Test
 
     assert_equal "Token", @swift_client.auth_token
     assert_equal "https://example.com/v1/AUTH_account", @swift_client.storage_url
+  end
+
+  def test_v3_authentication_username_domain_deprecation
+    assert_raises SwiftClient::AuthenticationError do
+      SwiftClient.new :auth_url => "https://auth.example.com/v3", :username => "username", :domain => "example.com", :password => "secret"
+    end
   end
 
   def test_v2_authentication_with_password
