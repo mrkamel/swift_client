@@ -148,7 +148,7 @@ class SwiftClient
     raise(EmptyNameError) if object_name.empty? || container_name.empty?
     raise(TempUrlKeyMissing) unless options[:temp_url_key]
 
-    expires = (Time.now + (options[:expires_in] || 3600).to_i).to_i
+    expires = (Time.now + (opts[:expires_in] || options[:expires_in] || 3600).to_i).to_i
     path = URI.parse("#{storage_url}/#{container_name}/#{object_name}").path
 
     signature = OpenSSL::HMAC.hexdigest("sha1", options[:temp_url_key], "GET\n#{expires}\n#{path}")
