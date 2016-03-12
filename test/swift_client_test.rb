@@ -292,7 +292,10 @@ class SwiftClientTest < MiniTest::Test
   end
 
   def test_temp_url
-    assert @swift_client.temp_url("object", "container", :expires_in => 3600) =~ %r{https://example.com/v1/AUTH_account/container/object\?temp_url_sig=[a-f0-9]{40}&temp_url_expires=[0-9]+}
+    Time.expects(:now).at_least_once.returns(1_000_000)
+
+    assert @swift_client.temp_url("object", "container") =~ %r{https://example.com/v1/AUTH_account/container/object\?temp_url_sig=[a-f0-9]{40}&temp_url_expires=1003600}
+    assert @swift_client.temp_url("object", "container", :expires_in => 86400) =~ %r{https://example.com/v1/AUTH_account/container/object\?temp_url_sig=[a-f0-9]{40}&temp_url_expires=1086400}
   end
 end
 
