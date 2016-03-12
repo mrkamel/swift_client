@@ -276,24 +276,23 @@ class SwiftClient
     raise(AuthenticationError, "#{response.code}: #{response.message}") unless response.success?
 
     self.auth_token = response.headers["X-Subject-Token"]
-
-    self.storage_url = options[:storage_url] || begin
-      if response.parsed_response["token"]["catalog"]
-        swift_services = response.parsed_response["token"]["catalog"].select { |service| service["type"] == "object-store" }
-        swift_service = swift_services.first
-
-        raise(AuthenticationError, "storage_url missing") unless swift_services.size == 1
-
-        swift_endpoints = swift_service["endpoints"].select { |endpoint| endpoint["interface"] == "public" }
-        swift_endpoint = swift_endpoints.first
-
-        raise(AuthenticationError, "storage_url missing") unless swift_endpoints.size == 1
-
-        swift_endpoint["url"]
-      end
-    end
+    self.storage_url = options[:storage_url] || storage_url_from_v3_response(response)
 
     raise(AuthenticationError, "storage_url missing") unless storage_url
+  end
+
+  def storage_url_from_v3_response(response)
+    swift_services = Array(response.parsed_response["token"]["catalog"]).select { |service| service["type"] == "object-store" }
+    swift_service = swift_services.first
+
+    return unless swift_services.size == 1
+
+    swift_endpoints = swift_service["endpoints"].select { |endpoint| endpoint["interface"] == "public" }
+    swift_endpoint = swift_endpoints.first
+
+    return unless swift_endpoints.size == 1
+
+    swift_endpoint["url"]
   end
 
   def paginate(method, *args, query)
