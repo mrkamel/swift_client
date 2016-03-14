@@ -145,7 +145,7 @@ SwiftClient offers the following requests:
 * get_objects(container_name, query = {}) -> HTTParty::Response
 * paginate_objects(container_name, query = {}) -> Enumerator
 * public_url(object_name, container_name) -> HTTParty::Response
-* temp_url(object_name, container_name) -> HTTParty::Response
+* temp_url(object_name, container_name, options = {}) -> HTTParty::Response
 
 ## Contributing
 
