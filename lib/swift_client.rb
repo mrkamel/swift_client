@@ -1,5 +1,6 @@
 
 require "swift_client/version"
+require "swift_client/null_cache"
 
 require "httparty"
 require "mime-types"
@@ -25,12 +26,13 @@ class SwiftClient
     end
   end
 
-  attr_accessor :options, :auth_token, :storage_url
+  attr_accessor :options, :auth_token, :storage_url, :cache_store
 
   def initialize(options = {})
     raise(OptionError, "Setting expires_in connection wide is deprecated") if options[:expires_in]
 
     self.options = options
+    self.cache_store = options[:cache_store] || SwiftClient::NullCache.new
 
     authenticate
   end
@@ -187,10 +189,34 @@ class SwiftClient
   end
 
   def authenticate
+    return if authenticate_from_cache
+
     return authenticate_v3 if options[:auth_url] =~ /v3/
     return authenticate_v2 if options[:auth_url] =~ /v2/
 
     authenticate_v1
+  end
+
+  def authenticate_from_cache
+    cached_auth_token = cache_store.get("swift_client:auth_token")
+    cached_storage_url = cache_store.get("swift_client:storage_url")
+
+    if (cached_auth_token && cached_auth_token != auth_token) || (cached_storage_url && cached_storage_url != storage_url)
+      self.auth_token = cached_auth_token
+      self.storage_url = cached_storage_url
+
+      return true
+    end
+
+    false
+  end
+
+  def set_authentication_details(auth_token, storage_url)
+    cache_store.set("swift_client:auth_token", auth_token)
+    cache_store.set("swift_client:storage_url", storage_url)
+
+    self.auth_token = auth_token
+    self.storage_url = storage_url
   end
 
   def authenticate_v1
@@ -202,8 +228,7 @@ class SwiftClient
 
     raise(AuthenticationError, "#{response.code}: #{response.message}") unless response.success?
 
-    self.auth_token = response.headers["X-Auth-Token"]
-    self.storage_url = options[:storage_url] || response.headers["X-Storage-Url"]
+    set_authentication_details response.headers["X-Auth-Token"], options[:storage_url] || response.headers["X-Storage-Url"]
   end
 
   def authenticate_v2
@@ -231,8 +256,7 @@ class SwiftClient
 
     raise(AuthenticationError, "#{response.code}: #{response.message}") unless response.success?
 
-    self.auth_token = response.parsed_response["access"]["token"]["id"]
-    self.storage_url = options[:storage_url]
+    set_authentication_details response.parsed_response["access"]["token"]["id"], options[:storage_url]
   end
 
   def authenticate_v3
@@ -277,10 +301,11 @@ class SwiftClient
 
     raise(AuthenticationError, "#{response.code}: #{response.message}") unless response.success?
 
-    self.auth_token = response.headers["X-Subject-Token"]
-    self.storage_url = options[:storage_url] || storage_url_from_v3_response(response)
+    storage_url = options[:storage_url] || storage_url_from_v3_response(response)
 
     raise(AuthenticationError, "storage_url missing") unless storage_url
+
+    set_authentication_details response.headers["X-Subject-Token"], storage_url
   end
 
   def storage_url_from_v3_response(response)

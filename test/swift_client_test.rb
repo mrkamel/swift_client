@@ -1,6 +1,20 @@
 
 require File.expand_path("../test_helper", __FILE__)
 
+class MemoryCache
+  def initialize
+    @cache = {}
+  end
+
+  def set(key, value)
+    @cache[key] = value
+  end
+
+  def get(key)
+    @cache[key]
+  end
+end
+
 class SwiftClientTest < MiniTest::Test
   def setup
     stub_request(:get, "https://example.com/auth/v1.0").with(:headers => { "X-Auth-Key" => "secret", "X-Auth-User" => "account:username" }).to_return(:status => 200, :body => "", :headers => { "X-Auth-Token" => "Token", "X-Storage-Url" => "https://example.com/v1/AUTH_account" })
@@ -9,6 +23,17 @@ class SwiftClientTest < MiniTest::Test
 
     assert_equal "Token", @swift_client.auth_token
     assert_equal "https://example.com/v1/AUTH_account", @swift_client.storage_url
+  end
+
+  def test_authenticate_from_cache
+    cache = MemoryCache.new
+    cache.set("swift_client:auth_token", "Token")
+    cache.set("swift_client:storage_url", "Storage url")
+
+    @swift_client = SwiftClient.new(:cache_store => cache)
+
+    assert_equal "Token", @swift_client.auth_token
+    assert_equal "Storage url", @swift_client.storage_url
   end
 
   def test_v3_authentication_unscoped_with_password
