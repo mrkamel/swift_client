@@ -201,7 +201,9 @@ class SwiftClient
     cached_auth_token = cache_store.get("swift_client:auth_token")
     cached_storage_url = cache_store.get("swift_client:storage_url")
 
-    if (cached_auth_token && cached_auth_token != auth_token) || (cached_storage_url && cached_storage_url != storage_url)
+    return false if cached_auth_token.nil? || cached_storage_url.nil?
+
+    if cached_auth_token != auth_token || cached_storage_url != storage_url
       self.auth_token = cached_auth_token
       self.storage_url = cached_storage_url
 
