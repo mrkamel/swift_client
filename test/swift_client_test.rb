@@ -27,13 +27,18 @@ class SwiftClientTest < MiniTest::Test
 
   def test_authenticate_from_cache
     cache = MemoryCache.new
-    cache.set("swift_client:auth_token", "Token")
-    cache.set("swift_client:storage_url", "Storage url")
+    cache.set("swift_client:auth_token", "Cached token")
+    cache.set("swift_client:storage_url", "https://cache.example.com/v1/AUTH_account")
 
-    @swift_client = SwiftClient.new(:cache_store => cache)
+    @swift_client = SwiftClient.new(:auth_url => "https://example.com/auth/v1.0", :username => "account:username", :api_key => "secret", :temp_url_key => "Temp url key", :cache_store => cache)
+
+    assert_equal "Cached token", @swift_client.auth_token
+    assert_equal "https://cache.example.com/v1/AUTH_account", @swift_client.storage_url
+
+    @swift_client.send(:authenticate) # Re-authenticate
 
     assert_equal "Token", @swift_client.auth_token
-    assert_equal "Storage url", @swift_client.storage_url
+    assert_equal "https://example.com/v1/AUTH_account", @swift_client.storage_url
   end
 
   def test_v3_authentication_unscoped_with_password
