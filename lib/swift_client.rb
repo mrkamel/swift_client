@@ -162,6 +162,15 @@ class SwiftClient
 
   private
 
+  def cache_key
+    auth_keys = [:auth_url, :username, :access_key, :user_id, :user_domain, :user_domain_id, :domain_name,
+      :domain_id, :token, :project_id, :project_name, :project_domain_name, :project_domain_id, :tenant_name]
+
+    auth_key = auth_keys.collect { |key| options[key] }.inspect
+
+    Digest::SHA1.hexdigest(auth_key)
+  end
+
   def find_header_key(headers, key)
     headers.keys.detect { |k| k.downcase == key.downcase }
   end
@@ -198,8 +207,8 @@ class SwiftClient
   end
 
   def authenticate_from_cache
-    cached_auth_token = cache_store.get("swift_client:auth_token")
-    cached_storage_url = cache_store.get("swift_client:storage_url")
+    cached_auth_token = cache_store.get("swift_client:auth_token:#{cache_key}")
+    cached_storage_url = cache_store.get("swift_client:storage_url:#{cache_key}")
 
     return false if cached_auth_token.nil? || cached_storage_url.nil?
 
@@ -214,8 +223,8 @@ class SwiftClient
   end
 
   def set_authentication_details(auth_token, storage_url)
-    cache_store.set("swift_client:auth_token", auth_token)
-    cache_store.set("swift_client:storage_url", storage_url)
+    cache_store.set("swift_client:auth_token:#{cache_key}", auth_token)
+    cache_store.set("swift_client:storage_url:#{cache_key}", storage_url)
 
     self.auth_token = auth_token
     self.storage_url = storage_url
