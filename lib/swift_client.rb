@@ -160,6 +160,14 @@ class SwiftClient
     "#{storage_url}/#{container_name}/#{object_name}?temp_url_sig=#{signature}&temp_url_expires=#{expires}"
   end
 
+  def bulk_delete(items)
+    items.each_slice(1_000) do |slice|
+      request :delete, "/?bulk-delete", :body => slice.join("\n"), :headers => { "Content-Type" => "text/plain" }
+    end
+
+    items
+  end
+
   private
 
   def cache_key

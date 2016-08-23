@@ -164,6 +164,18 @@ class SwiftClientTest < MiniTest::Test
     assert_equal containers, @swift_client.get_containers.parsed_response
   end
 
+  def test_bulk_delete
+    objects = [
+      "container1/object1",
+      "container1/object2",
+      "container2/object1"
+    ]
+
+    stub_request(:delete, "https://example.com/v1/AUTH_account/?bulk-delete").with(:body => objects.join("\n"), :headers => { "Content-Type" => "text/plain", "X-Auth-Token" => "Token" }).to_return(:status => 200,:body => "", :headers => { "Content-Type" => "application/json" })
+
+    assert @swift_client.bulk_delete(objects)
+  end
+
   def test_paginate_containers
     containers = [
       { "count" => 1, "bytes" => 1, "name" => "container-1" },
