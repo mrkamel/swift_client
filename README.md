@@ -148,6 +148,30 @@ SwiftClient offers the following requests:
 * temp_url(object_name, container_name, options = {}) -> HTTParty::Response
 * bulk_delete(entries) -> entries
 
+## Re-Using/Sharing/Caching Auth Tokens
+
+Certain OpenStack/Swift providers have limits in place regarding token
+generation. To re-use auth tokens by caching them via memcached, install dalli
+
+`gem install dalli`
+
+and provide an instance of Dalli::Client to SwiftClient:
+
+```ruby
+swift_client = SwiftClient.new(
+  :auth_url => "https://example.com/auth/v1.0",
+  ...
+  :cache_store => Dalli::Client.new
+)
+```
+
+The cache key used to store the auth token will include all neccessary details
+to ensure the auth token won't be used for another account erroneously.
+
+You are not restricted to use memcached, by simply implementing a driver for your
+favorite cache store. See [null_cache.rb](https://github.com/mrkamel/swift_client/blob/master/lib/swift_client/null_cache.rb)
+for more info.
+
 ## bulk_delete
 
 Takes an array containing container_name/object_name entries.
