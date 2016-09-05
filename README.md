@@ -166,10 +166,11 @@ swift_client = SwiftClient.new(
 ```
 
 The cache key used to store the auth token will include all neccessary details
-to ensure the auth token won't be used for another account erroneously.
+to ensure the auth token won't be used for a different swift account erroneously.
 
-You are not restricted to use memcached, by simply implementing a driver for your
-favorite cache store. See [null_cache.rb](https://github.com/mrkamel/swift_client/blob/master/lib/swift_client/null_cache.rb)
+The cache implementation of SwiftClient is not restricted to memcached. To use
+a different one, simply implement a driver for your favorite cache store. See
+[null_cache.rb](https://github.com/mrkamel/swift_client/blob/master/lib/swift_client/null_cache.rb)
 for more info.
 
 ## bulk_delete
