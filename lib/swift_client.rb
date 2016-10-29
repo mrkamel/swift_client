@@ -218,7 +218,7 @@ class SwiftClient
     headers["Accept"] = "application/json"
     uri = URI("#{storage_url}#{path}")
     Net::HTTP.start(uri.host, uri.port, :use_ssl => uri.scheme == "https") do |http|
-      req = Net::HTTP::Get.new uri
+      req = Net::HTTP::Get.new uri.to_s
       headers.each{|h,v| req[h] = v if v}
       http.request req do |response|
         response.read_body(&block)
