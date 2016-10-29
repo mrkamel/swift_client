@@ -120,6 +120,13 @@ class SwiftClient
     request :get, "/#{container_name}/#{object_name}"
   end
 
+  def get_object_chunked(object_name, container_name, &block)
+    raise(EmptyNameError) if object_name.empty? || container_name.empty?
+    raise(ArgumentError) if block.nil?
+
+    get_chunked "/#{container_name}/#{object_name}", &block
+  end
+
   def head_object(object_name, container_name)
     raise(EmptyNameError) if object_name.empty? || container_name.empty?
 
@@ -203,6 +210,20 @@ class SwiftClient
     raise(ResponseError.new(response.code, response.message)) unless response.success?
 
     response
+  end
+
+  def get_chunked(path, opts = {}, &block)
+    headers = (opts[:headers] || {}).dup
+    headers["X-Auth-Token"] = auth_token
+    headers["Accept"] = "application/json"
+    uri = URI("#{storage_url}#{path}")
+    Net::HTTP.start(uri.host, uri.port, :use_ssl => uri.scheme == "https") do |http|
+      req = Net::HTTP::Get.new uri
+      headers.each{|h,v| req[h] = v if v}
+      http.request req do |response|
+        response.read_body(&block)
+      end
+    end
   end
 
   def authenticate
@@ -357,4 +378,3 @@ class SwiftClient
     end
   end
 end
-
