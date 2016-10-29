@@ -140,7 +140,7 @@ SwiftClient offers the following requests:
 * put_object(object_name, data_or_io, container_name, headers = {}) -> HTTParty::Response
 * post_object(object_name, container_name, headers = {}) -> HTTParty::Response
 * get_object(object_name, container_name) -> HTTParty::Response
-* get_object_chunked(object_name, container_name){|chunk| save chunk } -> Nil
+* get_object(object_name, container_name){|chunk| save chunk } -> HTTParty::Response
 * head_object(object_name, container_name) -> HTTParty::Response
 * delete_object(object_name, container_name) -> HTTParty::Response
 * get_objects(container_name, query = {}) -> HTTParty::Response
@@ -150,11 +150,11 @@ SwiftClient offers the following requests:
 * bulk_delete(entries) -> entries
 
 ### Getting large objects
-The `get_object` method is suitable for small objects that easily fit in memory. For larger objects, the `get_object_chunked` method should be used to prevent memory exhaustion.
+The `get_object` method with out a block is suitable for small objects that easily fit in memory. For larger objects, specify a block to process chunked data as it comes in.
 
 ```ruby
 File.open("/tmp/output", "wb") do |file_io|
-  swift_client.get_object_chunked("/large/object", "container") do |chunk|
+  swift_client.get_object("/large/object", "container") do |chunk|
     file_io.write(chunk)
   end
 end
