@@ -277,17 +277,14 @@ class SwiftClientTest < MiniTest::Test
 
   def test_get_object
     stub_request(:get, "https://example.com/v1/AUTH_account/container/object").with(:headers => { "Accept" => "application/json", "X-Auth-Token" => "Token" }).to_return(:status => 200, :body => "Body", :headers => {})
-
-    assert_equal "Body", @swift_client.get_object("object", "container").body
-  end
-
-  def test_get_object_chunked
     block_res = 0
 
     large_body = "Body" * 16384
     stub_request(:get, "https://example.com/v1/AUTH_account/container/large_object").with(:headers => { "Accept" => "application/json", "X-Auth-Token" => "Token" }).to_return(:status => 200, :body => large_body, :headers => {})
 
-    @swift_client.get_object_chunked("large_object", "container") do |chunk|
+    assert_equal "Body", @swift_client.get_object("object", "container").body
+
+    @swift_client.get_object("large_object", "container") do |chunk|
       block_res += chunk.length
     end
 

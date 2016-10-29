@@ -114,17 +114,10 @@ class SwiftClient
     request :post, "/#{container_name}/#{object_name}", :headers => headers
   end
 
-  def get_object(object_name, container_name)
+  def get_object(object_name, container_name, &block)
     raise(EmptyNameError) if object_name.empty? || container_name.empty?
 
-    request :get, "/#{container_name}/#{object_name}"
-  end
-
-  def get_object_chunked(object_name, container_name, &block)
-    raise(EmptyNameError) if object_name.empty? || container_name.empty?
-    raise(ArgumentError) if block.nil?
-
-    get_chunked "/#{container_name}/#{object_name}", &block
+    request :get, "/#{container_name}/#{object_name}", &block
   end
 
   def head_object(object_name, container_name)
@@ -190,40 +183,26 @@ class SwiftClient
     headers.keys.detect { |k| k.downcase == key.downcase }
   end
 
-  def request(method, path, opts = {})
+  def request(method, path, opts = {}, &block)
     headers = (opts[:headers] || {}).dup
     headers["X-Auth-Token"] = auth_token
     headers["Accept"] = "application/json"
 
     stream_pos = opts[:body_stream].pos if opts[:body_stream]
 
-    response = HTTParty.send(method, "#{storage_url}#{path}", opts.merge(:headers => headers))
+    response = HTTParty.send(method, "#{storage_url}#{path}", opts.merge(:headers => headers).merge(block ? {:stream_body => true} : {}), &block)
 
     if response.code == 401
       authenticate
 
       opts[:body_stream].pos = stream_pos if opts[:body_stream]
 
-      return request(method, path, opts)
+      return request(method, path, opts, &block)
     end
 
     raise(ResponseError.new(response.code, response.message)) unless response.success?
 
     response
-  end
-
-  def get_chunked(path, opts = {}, &block)
-    headers = (opts[:headers] || {}).dup
-    headers["X-Auth-Token"] = auth_token
-    headers["Accept"] = "application/json"
-    uri = URI("#{storage_url}#{path}")
-    Net::HTTP.start(uri.host, uri.port, :use_ssl => uri.scheme == "https") do |http|
-      req = Net::HTTP::Get.new uri.to_s
-      headers.each{|h,v| req[h] = v if v}
-      http.request req do |response|
-        response.read_body(&block)
-      end
-    end
   end
 
   def authenticate
