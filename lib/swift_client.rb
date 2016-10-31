@@ -117,7 +117,7 @@ class SwiftClient
   def get_object(object_name, container_name, &block)
     raise(EmptyNameError) if object_name.empty? || container_name.empty?
 
-    request :get, "/#{container_name}/#{object_name}", &block
+    request(:get, "/#{container_name}/#{object_name}", block ? { :stream_body => true } : {}, &block)
   end
 
   def head_object(object_name, container_name)
@@ -190,7 +190,7 @@ class SwiftClient
 
     stream_pos = opts[:body_stream].pos if opts[:body_stream]
 
-    response = HTTParty.send(method, "#{storage_url}#{path}", opts.merge(:headers => headers).merge(block ? {:stream_body => true} : {}), &block)
+    response = HTTParty.send(method, "#{storage_url}#{path}", opts.merge(:headers => headers), &block)
 
     if response.code == 401
       authenticate
