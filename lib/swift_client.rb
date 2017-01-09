@@ -37,61 +37,61 @@ class SwiftClient
     authenticate
   end
 
-  def head_account
-    request :head, "/"
+  def head_account(options = {})
+    request :head, "/", options
   end
 
-  def post_account(headers = {})
-    request :post, "/", :headers => headers
+  def post_account(headers = {}, options = {})
+    request :post, "/", options.merge(:headers => headers)
   end
 
-  def head_containers
-    request :head, "/"
+  def head_containers(options = {})
+    request :head, "/", options
   end
 
-  def get_containers(query = {})
-    request :get, "/", :query => query
+  def get_containers(query = {}, options = {})
+    request :get, "/", options.merge(:query => query)
   end
 
-  def paginate_containers(query = {}, &block)
-    paginate :get_containers, query, &block
+  def paginate_containers(query = {}, options = {}, &block)
+    paginate(:get_containers, query, options, &block)
   end
 
-  def get_container(container_name, query = {})
+  def get_container(container_name, query = {}, options = {})
     raise(EmptyNameError) if container_name.empty?
 
-    request :get, "/#{container_name}", :query => query
+    request :get, "/#{container_name}", options.merge(:query => query)
   end
 
-  def paginate_container(container_name, query = {}, &block)
-    paginate :get_container, container_name, query, &block
+  def paginate_container(container_name, query = {}, options = {}, &block)
+    paginate(:get_container, container_name, query, options, &block)
   end
 
-  def head_container(container_name)
+  def head_container(container_name, options = {})
     raise(EmptyNameError) if container_name.empty?
 
-    request :head, "/#{container_name}"
+    request :head, "/#{container_name}", options
   end
 
-  def put_container(container_name, headers = {})
+  def put_container(container_name, headers = {}, options = {})
     raise(EmptyNameError) if container_name.empty?
 
-    request :put, "/#{container_name}", :headers => headers
+    request :put, "/#{container_name}", options.merge(:headers => headers)
   end
 
-  def post_container(container_name, headers = {})
+  def post_container(container_name, headers = {}, options = {})
     raise(EmptyNameError) if container_name.empty?
 
-    request :post, "/#{container_name}", :headers => headers
+    request :post, "/#{container_name}", options.merge(:headers => headers)
   end
 
-  def delete_container(container_name)
+  def delete_container(container_name, options = {})
     raise(EmptyNameError) if container_name.empty?
 
-    request :delete, "/#{container_name}"
+    request :delete, "/#{container_name}", options
   end
 
-  def put_object(object_name, data_or_io, container_name, headers = {})
+  def put_object(object_name, data_or_io, container_name, headers = {}, options = {})
     raise(EmptyNameError) if object_name.empty? || container_name.empty?
 
     mime_type = MIME::Types.of(object_name).first
@@ -105,41 +105,41 @@ class SwiftClient
 
     extended_headers["Transfer-Encoding"] = "chunked"
 
-    request :put, "/#{container_name}/#{object_name}", :body_stream => data_or_io.respond_to?(:read) ? data_or_io : StringIO.new(data_or_io), :headers => extended_headers
+    request :put, "/#{container_name}/#{object_name}", options.merge(:body_stream => data_or_io.respond_to?(:read) ? data_or_io : StringIO.new(data_or_io), :headers => extended_headers)
   end
 
-  def post_object(object_name, container_name, headers = {})
+  def post_object(object_name, container_name, headers = {}, options = {})
     raise(EmptyNameError) if object_name.empty? || container_name.empty?
 
-    request :post, "/#{container_name}/#{object_name}", :headers => headers
+    request :post, "/#{container_name}/#{object_name}", options.merge(:headers => headers)
   end
 
-  def get_object(object_name, container_name, &block)
+  def get_object(object_name, container_name, options = {}, &block)
     raise(EmptyNameError) if object_name.empty? || container_name.empty?
 
-    request(:get, "/#{container_name}/#{object_name}", block ? { :stream_body => true } : {}, &block)
+    request(:get, "/#{container_name}/#{object_name}", options.merge(block ? { :stream_body => true } : {}), &block)
   end
 
-  def head_object(object_name, container_name)
+  def head_object(object_name, container_name, options = {})
     raise(EmptyNameError) if object_name.empty? || container_name.empty?
 
-    request :head, "/#{container_name}/#{object_name}"
+    request :head, "/#{container_name}/#{object_name}", options
   end
 
-  def delete_object(object_name, container_name)
+  def delete_object(object_name, container_name, options = {})
     raise(EmptyNameError) if object_name.empty? || container_name.empty?
 
-    request :delete, "/#{container_name}/#{object_name}"
+    request :delete, "/#{container_name}/#{object_name}", options
   end
 
-  def get_objects(container_name, query = {})
+  def get_objects(container_name, query = {}, options = {})
     raise(EmptyNameError) if container_name.empty?
 
-    request :get, "/#{container_name}", :query => query
+    request :get, "/#{container_name}", options.merge(:query => query)
   end
 
-  def paginate_objects(container_name, query = {}, &block)
-    paginate :get_objects, container_name, query, &block
+  def paginate_objects(container_name, query = {}, options = {}, &block)
+    paginate(:get_objects, container_name, query, options, &block)
   end
 
   def public_url(object_name, container_name)
@@ -160,9 +160,9 @@ class SwiftClient
     "#{storage_url}/#{container_name}/#{object_name}?temp_url_sig=#{signature}&temp_url_expires=#{expires}"
   end
 
-  def bulk_delete(items)
+  def bulk_delete(items, options = {})
     items.each_slice(1_000) do |slice|
-      request :delete, "/?bulk-delete", :body => slice.join("\n"), :headers => { "Content-Type" => "text/plain" }
+      request :delete, "/?bulk-delete", options.merge(:body => slice.join("\n"), :headers => { "Content-Type" => "text/plain" })
     end
 
     items
@@ -341,13 +341,13 @@ class SwiftClient
     swift_endpoint["url"]
   end
 
-  def paginate(method, *args, query)
-    return enum_for(:paginate, method, *args, query) unless block_given?
+  def paginate(method, *args, query, options)
+    return enum_for(:paginate, method, *args, query, options) unless block_given?
 
     marker = nil
 
     loop do
-      response = send(method, *args, marker ? query.merge(:marker => marker) : query)
+      response = send(method, *args, marker ? query.merge(:marker => marker) : query, options)
 
       return if response.parsed_response.empty?
 
