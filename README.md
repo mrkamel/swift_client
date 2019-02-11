@@ -101,7 +101,8 @@ swift_client = SwiftClient.new(
   :auth_url => "https://auth.example.com/v3",
   :storage_url => "https://storage.example.com/v1/AUTH_account",
   :user_id => "user id",
-  :password => "password"
+  :password => "password",
+  :interface => "internal"
 )
 
 # OR
