@@ -333,7 +333,8 @@ class SwiftClient
 
     return unless swift_services.size == 1
 
-    swift_endpoints = swift_service["endpoints"].select { |endpoint| endpoint["interface"] == "public" }
+    interface = options[:interface] || "public"
+    swift_endpoints = swift_service["endpoints"].select { |endpoint| endpoint["interface"] == interface }
     swift_endpoint = swift_endpoints.first
 
     return unless swift_endpoints.size == 1
