@@ -283,6 +283,12 @@ class SwiftClientTest < MiniTest::Test
     assert_equal 201, @swift_client.post_object('object', 'container', 'X-Object-Meta-Test' => 'Test').code
   end
 
+  def test_post_head
+    stub_request(:post, 'https://example.com/v1/AUTH_account/container/object').with(headers: { 'Accept' => 'application/json', 'X-Auth-Token' => 'Token', 'X-Delete-At' => '1553524860' }).to_return(status: 201, body: '', headers: {})
+
+    assert_equal 201, @swift_client.post_head('object', 'container', 'X-Delete-At' => '1553524860').code
+  end
+
   def test_get_object
     stub_request(:get, 'https://example.com/v1/AUTH_account/container/object').with(headers: { 'Accept' => 'application/json', 'X-Auth-Token' => 'Token' }).to_return(status: 200, body: 'Body', headers: {})
     block_res = 0
