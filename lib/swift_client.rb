@@ -126,6 +126,12 @@ class SwiftClient
     request :head, "/#{container_name}/#{object_name}", options
   end
 
+  def post_head(object_name, container_name, _headers = {}, options = {})
+    raise(EmptyNameError) if object_name.empty? || container_name.empty?
+
+    request :post, "/#{container_name}/#{object_name}", options.merge(headers: _headers)
+  end
+
   def delete_object(object_name, container_name, options = {})
     raise(EmptyNameError) if object_name.empty? || container_name.empty?
 
