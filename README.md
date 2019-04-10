@@ -127,28 +127,29 @@ access the response body and JSON response. Checkout the
 
 SwiftClient offers the following requests:
 
-* head_account(options = {}) -> HTTParty::Response
-* post_account(headers = {}, options = {}) -> HTTParty::Response
-* head_containers(options = {}) -> HTTParty::Response
-* get_containers(query = {}, options = {}) -> HTTParty::Response
-* paginate_containers(query = {}, options = {}) -> Enumerator
-* get_container(container_name, query = {}, options = {}) -> HTTParty::Response
-* paginate_container(container_name, query = {}, options = {}) -> Enumerator
-* head_container(container_name, options = {}) -> HTTParty::Response
-* put_container(container_name, headers = {}, options = {}) -> HTTParty::Response
-* post_container(container_name, headers = {}, options = {}) -> HTTParty::Response
-* delete_container(container_name, options = {}) -> HTTParty::Response
-* put_object(object_name, data_or_io, container_name, headers = {}, options = {}) -> HTTParty::Response
-* post_object(object_name, container_name, headers = {}, options = {}) -> HTTParty::Response
-* get_object(object_name, container_name, options = {}) -> HTTParty::Response
-* get_object(object_name, container_name, options = {}) { |chunk| save chunk } -> HTTParty::Response
-* head_object(object_name, container_name, options = {}) -> HTTParty::Response
-* delete_object(object_name, container_name, options = {}) -> HTTParty::Response
-* get_objects(container_name, query = {}, options = {}) -> HTTParty::Response
-* paginate_objects(container_name, query = {}, options = {}) -> Enumerator
-* public_url(object_name, container_name) -> HTTParty::Response
-* temp_url(object_name, container_name, options = {}) -> HTTParty::Response
-* bulk_delete(entries, options = {}) -> entries
+* `head_account(options = {}) # => HTTParty::Response`
+* `post_account(headers = {}, options = {}) # => HTTParty::Response`
+* `head_containers(options = {}) # => HTTParty::Response`
+* `get_containers(query = {}, options = {}) # => HTTParty::Response`
+* `paginate_containers(query = {}, options = {}) # => Enumerator`
+* `get_container(container_name, query = {}, options = {}) # => HTTParty::Response`
+* `paginate_container(container_name, query = {}, options = {}) # => Enumerator`
+* `head_container(container_name, options = {}) # => HTTParty::Response`
+* `put_container(container_name, headers = {}, options = {}) # => HTTParty::Response`
+* `post_container(container_name, headers = {}, options = {}) # => HTTParty::Response`
+* `delete_container(container_name, options = {}) # => HTTParty::Response`
+* `put_object(object_name, data_or_io, container_name, headers = {}, options = {}) # => HTTParty::Response`
+* `post_object(object_name, container_name, headers = {}, options = {}) # => HTTParty::Response`
+* `get_object(object_name, container_name, options = {}) -> HTTParty::Response`
+* `get_object(object_name, container_name, options = {}) { |chunk| save chunk } # => HTTParty::Response`
+* `head_object(object_name, container_name, options = {}) # => HTTParty::Response`
+* `delete_object(object_name, container_name, options = {}) # => HTTParty::Response`
+* `get_objects(container_name, query = {}, options = {}) # => HTTParty::Response`
+* `paginate_objects(container_name, query = {}, options = {}) # => Enumerator`
+* `public_url(object_name, container_name) # => HTTParty::Response`
+* `temp_url(object_name, container_name, options = {}) # => HTTParty::Response`
+* `bulk_delete(entries, options = {}) # => entries`
+* `post_head(object_name, container_name, _headers = {}, options = {}) # => HTTParty::Response`
 
 ### Getting large objects
 The `get_object` method with out a block is suitable for small objects that easily fit in memory. For larger objects, specify a block to process chunked data as it comes in.
