@@ -103,9 +103,12 @@ class SwiftClient
       extended_headers["Content-Type"] ||= "application/octet-stream"
     end
 
-    extended_headers["Transfer-Encoding"] = "chunked"
-
-    request :put, "/#{container_name}/#{object_name}", options.merge(:body_stream => data_or_io.respond_to?(:read) ? data_or_io : StringIO.new(data_or_io), :headers => extended_headers)
+    if extended_headers["Transfer-Encoding"] == "identity"
+      request :put, "/#{container_name}/#{object_name}", options.merge(:body => data_or_io.respond_to?(:read) ? data_or_io.read : data_or_io, :headers => extended_headers)
+    else
+      extended_headers["Transfer-Encoding"] = "chunked"
+      request :put, "/#{container_name}/#{object_name}", options.merge(:body_stream => data_or_io.respond_to?(:read) ? data_or_io : StringIO.new(data_or_io), :headers => extended_headers)
+    end
   end
 
   def post_object(object_name, container_name, headers = {}, options = {})
