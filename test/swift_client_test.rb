@@ -254,6 +254,12 @@ class SwiftClientTest < MiniTest::Test
     assert_equal 201, @swift_client.put_object("object", "data", "container", "X-Object-Meta-Test" => "Test").code
   end
 
+  def test_put_object_nonchunked
+    stub_request(:put, "https://example.com/v1/AUTH_account/container/object").with(:body => "data", :headers => { "Transfer-Encoding" => "identity", "Content-Type" => "application/octet-stream", "Accept" => "application/json", "X-Auth-Token" => "Token", "X-Object-Meta-Test" => "Test" }).to_return(:status => 201, :body => "", :headers => {})
+
+    assert_equal 201, @swift_client.put_object("object", "data", "container", "X-Object-Meta-Test" => "Test", "Transfer-Encoding" => "identity").code
+  end
+
   def test_put_object_with_renewed_authorization
     stub_request(:put, "https://example.com/v1/AUTH_account/container/object").with(:body => "data", :headers => { "Transfer-Encoding" => "chunked", "Content-Type" => "application/octet-stream", "Accept" => "application/json", "X-Auth-Token" => "Token" }).to_return({ :status => 401, :body => "", :headers => {}}, { :status => 201, :body => "", :headers => {}})
 
@@ -276,6 +282,12 @@ class SwiftClientTest < MiniTest::Test
     stub_request(:put, "https://example.com/v1/AUTH_account/container/object").with(:body => "data", :headers => { "Transfer-Encoding" => "chunked", "Accept" => "application/json", "X-Auth-Token" => "Token", "X-Object-Meta-Test" => "Test" }).to_return(:status => 201, :body => "", :headers => {})
 
     assert_equal 201, @swift_client.put_object("object", StringIO.new("data"), "container", "X-Object-Meta-Test" => "Test").code
+  end
+
+  def test_put_object_with_io_nonchunked
+    stub_request(:put, "https://example.com/v1/AUTH_account/container/object").with(:body => "data", :headers => { "Transfer-Encoding" => "identity", "Accept" => "application/json", "X-Auth-Token" => "Token", "X-Object-Meta-Test" => "Test" }).to_return(:status => 201, :body => "", :headers => {})
+
+    assert_equal 201, @swift_client.put_object("object", StringIO.new("data"), "container", "X-Object-Meta-Test" => "Test", "Transfer-Encoding" => "identity").code
   end
 
   def test_post_object

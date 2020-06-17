@@ -192,6 +192,15 @@ for more info.
 Takes an array containing container_name/object_name entries.
 Automatically slices and sends 1_000 items per request.
 
+## non-chunked uploads
+
+By default files are uploaded via `"Transfer-Encoding" => "chunked"`.  
+You can override this by passing `"Transfer-Encoding" => "identity"` header:  
+
+```ruby
+put_object(object_name, data_or_io, container_name, { 'Transfer-Encoding' => 'identity' })
+```
+
 ## Contributing
 
 1. Fork it ( https://github.com/mrkamel/swift_client/fork )
