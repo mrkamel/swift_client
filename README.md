@@ -192,13 +192,14 @@ for more info.
 Takes an array containing container_name/object_name entries.
 Automatically slices and sends 1_000 items per request.
 
-## non-chunked uploads
+## Non-chunked uploads
 
-By default files are uploaded via `"Transfer-Encoding" => "chunked"`.  
-You can override this by passing `"Transfer-Encoding" => "identity"` header:  
+By default files are uploaded in chunks and using a `Transfer-Encoding:
+chunked` header. You can override this by passing a `Transfer-Encoding:
+identity` header:
 
 ```ruby
-put_object(object_name, data_or_io, container_name, { 'Transfer-Encoding' => 'identity' })
+put_object(object_name, data_or_io, container_name, "Transfer-Encoding" => "identity")
 ```
 
 ## Contributing
@@ -208,3 +209,8 @@ put_object(object_name, data_or_io, container_name, { 'Transfer-Encoding' => 'id
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create a new Pull Request
+
+## Semantic Versioning
+
+Starting with version 0.2.0, SwiftClient uses Semantic Versioning:
+[SemVer](http://semver.org/)
