@@ -19,7 +19,7 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   spec.add_dependency "httparty"
-  spec.add_dependency "mime-types", "< 3.0"
+  spec.add_dependency "mime-types"
 
   spec.add_development_dependency "bundler"
   spec.add_development_dependency "rake"
