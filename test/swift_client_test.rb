@@ -173,6 +173,17 @@ class SwiftClientTest < MiniTest::Test
     assert_equal containers, @swift_client.get_containers.parsed_response
   end
 
+  def test_get_containers_without_query
+    containers = [
+      { "count" => 1, "bytes" => 1, "name" => "container-1" },
+      { "count" => 1, "bytes" => 1, "name" => "container-2" }
+    ]
+
+    stub_request(:get, "https://example.com/v1/AUTH_account/").with(:headers => { "Accept" => "application/json", "X-Auth-Token" => "Token" }).to_return(:status => 200, :body => JSON.dump(containers), :headers => { "Content-Type" => "application/json" })
+
+    assert_equal containers, @swift_client.get_containers.parsed_response
+  end
+
   def test_bulk_delete
     objects = [
       "container1/object1",
