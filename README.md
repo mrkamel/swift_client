@@ -130,10 +130,10 @@ SwiftClient offers the following requests:
 * `head_account(options = {}) # => HTTParty::Response`
 * `post_account(headers = {}, options = {}) # => HTTParty::Response`
 * `head_containers(options = {}) # => HTTParty::Response`
-* `get_containers(query = {}, options = {}) # => HTTParty::Response`
-* `paginate_containers(query = {}, options = {}) # => Enumerator`
-* `get_container(container_name, query = {}, options = {}) # => HTTParty::Response`
-* `paginate_container(container_name, query = {}, options = {}) # => Enumerator`
+* `get_containers(query = nil, options = {}) # => HTTParty::Response`
+* `paginate_containers(query = nil, options = {}) # => Enumerator`
+* `get_container(container_name, query = nil, options = {}) # => HTTParty::Response`
+* `paginate_container(container_name, query = nil, options = {}) # => Enumerator`
 * `head_container(container_name, options = {}) # => HTTParty::Response`
 * `put_container(container_name, headers = {}, options = {}) # => HTTParty::Response`
 * `post_container(container_name, headers = {}, options = {}) # => HTTParty::Response`
@@ -144,8 +144,8 @@ SwiftClient offers the following requests:
 * `get_object(object_name, container_name, options = {}) { |chunk| save chunk } # => HTTParty::Response`
 * `head_object(object_name, container_name, options = {}) # => HTTParty::Response`
 * `delete_object(object_name, container_name, options = {}) # => HTTParty::Response`
-* `get_objects(container_name, query = {}, options = {}) # => HTTParty::Response`
-* `paginate_objects(container_name, query = {}, options = {}) # => Enumerator`
+* `get_objects(container_name, query = nil, options = {}) # => HTTParty::Response`
+* `paginate_objects(container_name, query = nil, options = {}) # => Enumerator`
 * `public_url(object_name, container_name) # => HTTParty::Response`
 * `temp_url(object_name, container_name, options = {}) # => HTTParty::Response`
 * `bulk_delete(entries, options = {}) # => entries`
@@ -154,6 +154,7 @@ SwiftClient offers the following requests:
 By default, the client instructs the Swift server to return JSON via an HTTP Accept header; to disable this pass `:json => false` in `options`. The rest of the `options` are passed directly to the internal [HTTParty](https://rubygems.org/gems/httparty) client.
 
 ### Getting large objects
+
 The `get_object` method with out a block is suitable for small objects that easily fit in memory. For larger objects, specify a block to process chunked data as it comes in.
 
 ```ruby

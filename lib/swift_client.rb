@@ -357,7 +357,7 @@ class SwiftClient
     marker = nil
 
     loop do
-      response = send(method, *args, marker ? query.merge(:marker => marker) : query, options)
+      response = send(method, *args, marker ? (query || {}).merge(:marker => marker) : query, options)
 
       return if response.parsed_response.empty?
 
