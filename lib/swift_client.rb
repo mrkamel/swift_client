@@ -195,7 +195,7 @@ class SwiftClient
   def request(method, path, opts = {}, &block)
     headers = (opts[:headers] || {}).dup
     headers["X-Auth-Token"] = auth_token
-    headers["Accept"] ||= "application/json" unless opts.delete(:json) == false
+    headers["Accept"] ||= "application/json" unless opts[:query] && opts[:query][:format]
 
     stream_pos = opts[:body_stream].pos if opts[:body_stream]
 

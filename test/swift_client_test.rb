@@ -341,12 +341,12 @@ class SwiftClientTest < MiniTest::Test
     assert_equal objects, @swift_client.get_objects("container-1", :limit => 2, :marker => "object-2").parsed_response
   end
 
-  def test_get_objects_no_json
+  def test_get_objects_format_plain
     response = "object-2\nobject-3\n"
 
-    stub_request(:get, "https://example.com/v1/AUTH_account/container-1?limit=2&marker=object-2").with(:headers => { "X-Auth-Token" => "Token" }).to_return(:status => 200, :body => response, :headers => { "Content-Type" => "text/html" })
+    stub_request(:get, "https://example.com/v1/AUTH_account/container-1?format=plain&limit=2&marker=object-2").with(:headers => { "X-Auth-Token" => "Token" }).to_return(:status => 200, :body => response, :headers => { "Content-Type" => "text/plain" })
 
-    assert_equal response, @swift_client.get_objects("container-1", { :limit => 2, :marker => "object-2" }, :json => false).body
+    assert_equal response, @swift_client.get_objects("container-1", :format => "plain", :limit => 2, :marker => "object-2").body
   end
 
   def test_paginate_objects

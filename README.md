@@ -151,7 +151,9 @@ SwiftClient offers the following requests:
 * `bulk_delete(entries, options = {}) # => entries`
 * `post_head(object_name, container_name, _headers = {}, options = {}) # => HTTParty::Response`
 
-By default, the client instructs the Swift server to return JSON via an HTTP Accept header; to disable this pass `:json => false` in `options`. The rest of the `options` are passed directly to the internal [HTTParty](https://rubygems.org/gems/httparty) client.
+By default, the client instructs the endpoint to return JSON via an HTTP Accept header; to specify another format pass, e.g., `:format => "plain"` in `query` ("xml" is also [supported in the Object Storage API](https://docs.openstack.org/api-ref/object-store/index.html?expanded=show-container-details-and-list-objects-detail#show-container-details-and-list-objects)).
+
+All `options` are passed directly to the internal [HTTParty](https://rubygems.org/gems/httparty) client.
 
 ### Getting large objects
 The `get_object` method with out a block is suitable for small objects that easily fit in memory. For larger objects, specify a block to process chunked data as it comes in.
