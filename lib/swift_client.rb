@@ -49,21 +49,21 @@ class SwiftClient
     request :head, "/", options
   end
 
-  def get_containers(query = {}, options = {})
+  def get_containers(query = nil, options = {})
     request :get, "/", options.merge(:query => query)
   end
 
-  def paginate_containers(query = {}, options = {}, &block)
+  def paginate_containers(query = nil, options = {}, &block)
     paginate(:get_containers, query, options, &block)
   end
 
-  def get_container(container_name, query = {}, options = {})
+  def get_container(container_name, query = nil, options = {})
     raise(EmptyNameError) if container_name.empty?
 
     request :get, "/#{container_name}", options.merge(:query => query)
   end
 
-  def paginate_container(container_name, query = {}, options = {}, &block)
+  def paginate_container(container_name, query = nil, options = {}, &block)
     paginate(:get_container, container_name, query, options, &block)
   end
 
@@ -141,13 +141,13 @@ class SwiftClient
     request :delete, "/#{container_name}/#{object_name}", options
   end
 
-  def get_objects(container_name, query = {}, options = {})
+  def get_objects(container_name, query = nil, options = {})
     raise(EmptyNameError) if container_name.empty?
 
     request :get, "/#{container_name}", options.merge(:query => query)
   end
 
-  def paginate_objects(container_name, query = {}, options = {}, &block)
+  def paginate_objects(container_name, query = nil, options = {}, &block)
     paginate(:get_objects, container_name, query, options, &block)
   end
 
@@ -357,7 +357,7 @@ class SwiftClient
     marker = nil
 
     loop do
-      response = send(method, *args, marker ? query.merge(:marker => marker) : query, options)
+      response = send(method, *args, marker ? (query || {}).merge(:marker => marker) : query, options)
 
       return if response.parsed_response.empty?
 
